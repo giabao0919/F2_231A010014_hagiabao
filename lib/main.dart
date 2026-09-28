@@ -2,8 +2,15 @@ import 'package:flutter/material.dart';
 
 void main() => runApp(const MyApp());
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  ThemeMode _themeMode = ThemeMode.light;
 
   @override
   Widget build(BuildContext context) {
@@ -16,8 +23,26 @@ class MyApp extends StatelessWidget {
           border: OutlineInputBorder(),
         ),
       ),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF0468D7),
+          brightness: Brightness.dark,
+        ),
+        inputDecorationTheme: const InputDecorationTheme(
+          border: OutlineInputBorder(),
+        ),
+      ),
+      themeMode: _themeMode,
       home: const LoginPage(),
     );
+  }
+
+  void _toggleTheme() {
+    setState(() {
+      _themeMode = _themeMode == ThemeMode.light
+          ? ThemeMode.dark
+          : ThemeMode.light;
+    });
   }
 }
 
@@ -35,6 +60,23 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Đăng nhập'),
+        actions: [
+          IconButton(
+            tooltip: 'Chuyển đổi sáng/tối',
+            icon: Icon(
+              Theme.of(context).brightness == Brightness.dark
+                  ? Icons.light_mode_outlined
+                  : Icons.dark_mode_outlined,
+            ),
+            onPressed: () {
+              final appState = context.findAncestorStateOfType<_MyAppState>();
+              appState?._toggleTheme();
+            },
+          ),
+        ],
+      ),
       body: SafeArea(
         // SingleChildScrollView: tránh lỗi tràn khi bàn phím hiện lên
         child: SingleChildScrollView(
@@ -158,10 +200,142 @@ class _LoginPageState extends State<LoginPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text('Chưa có tài khoản?'),
-            TextButton(onPressed: () {}, child: const Text('Đăng ký')),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(builder: (_) => const RegisterPage()),
+                );
+              },
+              child: const Text('Đăng ký'),
+            ),
           ],
         ),
       ],
+    );
+  }
+}
+
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
+
+  @override
+  State<RegisterPage> createState() => _RegisterPageState();
+}
+
+class _RegisterPageState extends State<RegisterPage> {
+  bool _anMatKhau = true;
+  bool _anXacNhan = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Đăng ký tài khoản'),
+        actions: [
+          IconButton(
+            tooltip: 'Chuyển đổi sáng/tối',
+            icon: Icon(
+              Theme.of(context).brightness == Brightness.dark
+                  ? Icons.light_mode_outlined
+                  : Icons.dark_mode_outlined,
+            ),
+            onPressed: () {
+              final appState = context.findAncestorStateOfType<_MyAppState>();
+              appState?._toggleTheme();
+            },
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Đăng ký tài khoản',
+              style: Theme.of(context).textTheme.headlineSmall,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Tạo tài khoản sinh viên mới để truy cập hệ thống',
+              style: TextStyle(color: Theme.of(context).colorScheme.outline),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            const TextField(
+              decoration: InputDecoration(
+                labelText: 'Họ và tên',
+                prefixIcon: Icon(Icons.person_outline),
+              ),
+            ),
+            const SizedBox(height: 12),
+            const TextField(
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: 'Mã số sinh viên',
+                prefixIcon: Icon(Icons.badge_outlined),
+              ),
+            ),
+            const SizedBox(height: 12),
+            const TextField(
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(
+                labelText: 'Địa chỉ Email',
+                prefixIcon: Icon(Icons.email_outlined),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              obscureText: _anMatKhau,
+              decoration: InputDecoration(
+                labelText: 'Mật khẩu',
+                prefixIcon: const Icon(Icons.lock_outline),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _anMatKhau ? Icons.visibility_off : Icons.visibility,
+                  ),
+                  onPressed: () => setState(() => _anMatKhau = !_anMatKhau),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              obscureText: _anXacNhan,
+              decoration: InputDecoration(
+                labelText: 'Xác nhận mật khẩu',
+                prefixIcon: const Icon(Icons.lock_outline),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _anXacNhan ? Icons.visibility_off : Icons.visibility,
+                  ),
+                  onPressed: () => setState(() => _anXacNhan = !_anXacNhan),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            FilledButton(
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Đăng ký tài khoản (mô phỏng) thành công!'),
+                  ),
+                );
+              },
+              child: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Text('ĐĂNG KÝ TÀI KHOẢN'),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Đã có tài khoản? Đăng nhập ngay'),
+            ),
+            const SizedBox(height: 12),
+            const ProfileCard(),
+          ],
+        ),
+      ),
     );
   }
 }
